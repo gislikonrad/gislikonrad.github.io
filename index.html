@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fence Board Calculator (mm)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.5em;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    .output {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .output p {
+      margin: 0.5em 0;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<h1>Fence Board Calculator (mm)</h1>
+
+<form id="calculator">
+  <label for="totalLength">Total fence length (mm):</label>
+  <input type="number" id="totalLength" placeholder="e.g. 10000" required />
+
+  <label for="boardWidth">Board width (mm):</label>
+  <input type="number" id="boardWidth" placeholder="e.g. 90" required />
+
+  <label for="gapWidth">Gap between boards (mm):</label>
+  <input type="number" id="gapWidth" placeholder="e.g. 10" required />
+</form>
+
+<div class="output" id="output">
+  <p>Enter values to see results.</p>
+</div>
+
+<script>
+  function calculate(x, y, z) {
+    if (x <= 2 * z || y <= 0 || z < 0) return null;
+
+    const usable = x - 2 * z;
+    const n = Math.floor((usable + z) / (y + z));
+    const contentWidth = n * y + (n - 1) * z;
+    const remaining = x - contentWidth - 2 * z;
+    const s = remaining / 2;
+
+    return {
+      fullBoards: n,
+      endBoardWidth: s
+    };
+  }
+
+  function updateOutput() {
+    const x = parseFloat(document.getElementById('totalLength').value);
+    const y = parseFloat(document.getElementById('boardWidth').value);
+    const z = parseFloat(document.getElementById('gapWidth').value);
+    const output = document.getElementById('output');
+
+    if (isNaN(x) || isNaN(y) || isNaN(z)) {
+      output.innerHTML = `<p>Please fill in all fields with numbers.</p>`;
+      return;
+    }
+
+    const result = calculate(x, y, z);
+    if (!result) {
+      output.innerHTML = `<p>Invalid input. Ensure all values are positive and the total length is large enough.</p>`;
+      return;
+    }
+
+    output.innerHTML = `
+      <p><strong>Total full boards:</strong> ${result.fullBoards}</p>
+      <p><strong>Width of each end board:</strong> ${result.endBoardWidth.toFixed(2)} mm</p>
+    `;
+  }
+
+  document.querySelectorAll("input").forEach(input => {
+    input.addEventListener("input", updateOutput);
+  });
+</script>
+
+</body>
+</html>
