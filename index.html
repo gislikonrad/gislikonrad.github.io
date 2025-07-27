@@ -71,18 +71,30 @@
 
 <script>
   function calculate(x, y, z) {
-    if (x <= 2 * z || y <= 0 || z < 0) return null;
+    if (x <= 0 || y <= 0 || z < 0) return null;
 
-    const usable = x - 2 * z;
-    const n = Math.floor((usable + z) / (y + z));
-    const contentWidth = n * y + (n - 1) * z;
-    const remaining = x - contentWidth - 2 * z;
-    const s = remaining / 2;
+    let n = Math.floor((x - 3 * z) / (y + z)); // conservative initial guess
+    let s = 0;
 
-    return {
-      fullBoards: n,
-      endBoardWidth: s
-    };
+    while (n >= 0) {
+      const fullBoardsWidth = n * y;
+      const totalGaps = (n + 3) * z;
+      const remaining = x - fullBoardsWidth - totalGaps;
+      s = remaining / 2;
+
+      if (s >= y / 2) {
+        const totalUsed = fullBoardsWidth + 2 * s + totalGaps;
+        return {
+          fullBoards: n,
+          endBoardWidth: s,
+          totalUsed
+        };
+      }
+
+      n--;
+    }
+
+    return null; // No valid layout
   }
 
   function updateOutput() {
@@ -98,13 +110,14 @@
 
     const result = calculate(x, y, z);
     if (!result) {
-      output.innerHTML = `<p>Invalid input. Ensure all values are positive and the total length is large enough.</p>`;
+      output.innerHTML = `<p>No valid layout: cannot maintain at least half a board width at each end. Try adjusting the inputs.</p>`;
       return;
     }
 
     output.innerHTML = `
       <p><strong>Total full boards:</strong> ${result.fullBoards}</p>
       <p><strong>Width of each end board:</strong> ${result.endBoardWidth.toFixed(2)} mm</p>
+      <p><strong>Total used space:</strong> ${result.totalUsed.toFixed(2)} mm of ${x} mm</p>
     `;
   }
 
